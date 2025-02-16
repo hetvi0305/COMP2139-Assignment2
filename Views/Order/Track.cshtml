@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "Track Order";
+}
+
+<h2>Track Your Order</h2>
+
+<form method="post" action="@Url.Action("Track", "Order")">
+    <div class="form-group">
+        <label for="orderId">Enter your Order ID:</label>
+        <input type="text" name="orderId" id="orderId" placeholder="Enter Order ID" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Track Order</button>
+</form>
+
+@if (ViewData["Error"] != null)
+{
+    <div class="alert alert-danger mt-3">
+        @ViewData["Error"]
+    </div>
+}
+
+@if (Model != null)
+{
+    <h3>Order Details</h3>
+    <div>
+        <strong>Order ID:</strong> @Model.Id<br />
+        <strong>Guest Name:</strong> @Model.GuestName<br />
+        <strong>Order Status:</strong> @Model.OrderStatus<br />
+        <strong>Order Date:</strong> @Model.OrderDate.ToString("yyyy-MM-dd")<br />
+        <strong>Total Price:</strong> $@Model.TotalPrice<br />
+    </div>
+}

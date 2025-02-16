@@ -1,0 +1,32 @@
+﻿@model Order
+
+@{
+    ViewBag.Title = "Order Confirmation";
+    Layout = "_Layout";
+}
+
+<h2>Order Confirmation</h2>
+<p>Thank you, @Model.GuestName! Your order has been placed.</p>
+
+<h3>Order Summary</h3>
+<table class="table">
+    <thead>
+    <tr>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Price</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model.OrderItems)
+    {
+        <tr>
+            <td>@item.Product.Name</td>
+            <td>@item.Quantity</td>
+            <td>@item.Product.Price.ToString("C")</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h3>Total Price: @Model.TotalPrice.ToString("C")</h3>

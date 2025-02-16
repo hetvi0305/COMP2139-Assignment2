@@ -1,0 +1,34 @@
+﻿@{
+    ViewBag.Title = "About";
+    Layout = "_Layout";
+
+    // Define group member profile variables
+    var students = new[]
+    {
+        new { Name = "Manvi Prakash", StudentNumber = "101488862" },
+        new { Name = "Hetvi Patel", StudentNumber = "101508910" },
+        new { Name = "Rashi Bedi", StudentNumber = "101485443" } // Assuming Rashi's student ID
+    };
+    
+    var courseCode = "COMP2139"; //101
+    var courseSection = "50259";
+}
+
+<h1>About</h1><br/>
+
+<div>
+    <h2>Welcome to Our Application!</h2>
+    <h6>This application was developed by three students from <strong>Group 43</strong> in the course<strong>@courseCode</strong> , Section <strong>@courseSection</strong>.</h6>
+
+    <h3>Meet the Team:</h3>
+    <ul>
+        @foreach (var student in students)
+        {
+            <li>
+                <strong>@student.Name</strong> - Student ID: @student.StudentNumber
+            </li>
+        }
+    </ul>
+
+    <h6>We are excited to showcase our project!</h6>
+</div>

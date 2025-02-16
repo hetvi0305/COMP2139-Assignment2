@@ -1,0 +1,22 @@
+﻿@model OrderCreateViewModel
+
+@{
+    ViewData["Title"] = "Update Order Status";
+}
+
+<h2>Update Order Status</h2>
+
+<form asp-action="UpdateStatus" method="post">
+    <!-- Hidden field to pass the order ID -->
+    <input type="hidden" name="orderId" value="@Model.Id" />
+
+    <div class="form-group">
+        <label for="status">Order Status</label>
+        @Html.DropDownListFor(
+            model => model.OrderStatus,
+            new SelectList(new[] { "Pending", "Processing", "Completed", "Cancelled" }, Model.OrderStatus),
+            new { @class = "form-control" })
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update Status</button>
+</form>
