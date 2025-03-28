@@ -86,16 +86,11 @@ public class OrderController : Controller
                 }
             }
         }
-
         _context.SaveChanges(); // Save order items
 
         return RedirectToAction("Index"); // Redirect to order list
     }
-
-
-
-
-
+    
 
     [HttpGet]
     public IActionResult Confirm(int id)
