@@ -1,4 +1,29 @@
-﻿<!DOCTYPE html>
+﻿<!-- Check if user is logged in -->
+@if (User.Identity is { IsAuthenticated: true })
+{
+    <p>Hello, @User.Identity.Name!</p>
+
+    <!-- Check if user is an Admin -->
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-controller="Category" asp-action="Create">Create Category</a>
+        <a asp-controller="Product" asp-action="Create">Create Products</a>
+    }
+
+    <!-- Check if user is a Regular User -->
+    @if (User.IsInRole("User"))
+    {
+        <a asp-controller="Order" asp-action="Create">Place Order</a>
+    }
+}
+else
+{
+    <a asp-area="Identity" asp-page="/Account/Login">Login</a>
+    <a asp-area="Identity" asp-page="/Account/Register">Register</a>
+}
+
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -13,55 +38,51 @@
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
 </head>
 <body>
-<header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-        <div class="container-fluid">
-            
-            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index"><i class="fa-solid fa-building"></i>Group-43 Inc.</a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index"><i class="fa-solid fa-house"></i> Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Product" asp-action="Index"><i class="fa-brands fa-product-hunt"></i> Product</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Category" asp-action="Index"><i class="fa-solid fa-layer-group"></i> Category</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Order" asp-action="Index"><i class="fa-solid fa-folder-plus"></i> Order</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="About"><i class="fa-solid fa-circle-info"></i> About</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-</header>
+
+@Html.Partial("_Header")
+
 <div class="container">
     <main role="main" class="pb-3">
         @RenderBody()
     </main>
 </div>
 
-<footer class="border-top footer text-muted">
-    <div class="container">
-        &copy; Manvi Prakash 101488862 <br/>
-        Rashi Bedi  101485443<br/>
-        Hetvi Patel  101508910
-        <a asp-area="" asp-controller="Home" asp-action="About">About</a>
-    </div>
-</footer>
+@Html.Partial("_Footer")
+
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
+
+<script>
+    $(document).ready(function () {
+        // Trigger the search when the input field changes
+        $('#searchInput').on('input', function () {
+            var search = $(this).val();
+            var categoryId = $('#categoryFilter').val();
+            var minPrice = $('#minPrice').val();
+            var maxPrice = $('#maxPrice').val();
+            var sortOrder = $('#sortOrder').val();
+            var lowStock = $('#lowStock').prop('checked');
+
+            $.ajax({
+                url: '@Url.Action("Search", "Product")', // URL to the Search action
+                type: 'GET',
+                data: {
+                    search: search,
+                    categoryId: categoryId,
+                    minPrice: minPrice,
+                    maxPrice: maxPrice,
+                    sortOrder: sortOrder,
+                    lowStock: lowStock
+                },
+                success: function (data) {
+                    // Update the search results container with the partial view data
+                    $('#searchResults').html(data);
+                }
+            });
+        });
+    });
+</script>
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

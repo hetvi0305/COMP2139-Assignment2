@@ -59,7 +59,7 @@
                     <ul>
                         @foreach (var detail in order.OrderItems)
                         {
-                            <li>@detail.Product.Name (x @detail.Quantity) - $@(detail.Product.Price * detail.Quantity)</li>
+                            <li>@detail.Product!.Name (x @detail.Quantity) - $@(detail.Product.Price * detail.Quantity)</li>
                         }
                     </ul>
                 </td>

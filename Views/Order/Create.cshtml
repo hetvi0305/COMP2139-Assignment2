@@ -1,14 +1,23 @@
-﻿@using COMP2139_Assignment1.Controllers
-@model OrderCreateViewModel
+﻿@model COMP2139_Assignment1.Views.Order.OrderCreateViewModel
 
 @{
     ViewBag.Title = "Create Order";
     Layout = "_Layout";
 }
 
+<!-- 🔄 Spinner -->
+<div id="loader" style="display: none; position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); z-index: 9999; background-color: rgba(255,255,255,0.8);
+    padding: 20px; border-radius: 10px;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
 <h2>Create Order</h2>
 
-<form asp-action="Create" method="post">
+<form asp-action="Create" method="post" id="orderForm">
+    @Html.AntiForgeryToken()
     <div class="form-group">
         <label>Guest Name:</label>
         <input type="text" asp-for="GuestName" class="form-control" required>
@@ -20,7 +29,31 @@
     </div>
 
     <h4>Select Products:</h4>
-    @for (int i = 0; i < Model.Products.Count; i++)
+    <div id="product-list">
+        @for (int i = 0; i < Model.Products.Count; i++)
+        {
+            <div class="form-check mb-2">
+                <input type="checkbox"
+                       name="SelectedProducts[@i]"
+                       value="@Model.Products[i].Id"
+                       class="form-check-input product-checkbox"
+                       id="product_@i" />
+
+                <label class="form-check-label" for="product_@i">
+                    @Model.Products[i].Name - $@Model.Products[i].Price
+                </label>
+
+                <input type="number"
+                       name="ProductQuantities[@i]"
+                       class="form-control quantity-input"
+                       style="width: 100px;"
+                       min="0"
+                       value="0"
+                       data-price="@Model.Products[i].Price" />
+            </div>
+        }
+    </div>
+    @*@for (int i = 0; i < Model.Products.Count; i++)
     {
         <div class="form-check">
             <input type="checkbox" name="SelectedProducts" value="@Model.Products[i].Id" class="form-check-input">
@@ -29,18 +62,90 @@
             <!-- Ensure input names match the ViewModel lists -->
             <input type="number" name="ProductQuantities" class="form-control" style="width: 80px;">
         </div>
-    }
+    }*@
+    <div class="mt-3">
+        <strong>Total Price: $<span id="totalPrice">0</span></strong>
+    </div>
 
-    <button type="submit" class="btn btn-primary">Place Order</button>
+    <button type="submit" class="btn btn-primary mt-3">Place Order</button>
 </form>
 
-<!-- Track Order form -->
+@*<!-- Track Order form -->
 <form method="post" action="@Url.Action("Track", "Order")">
     <input type="text" name="orderId" placeholder="Enter Order ID" class="form-control" style="width: 200px;" />
     <button type="submit" class="btn btn-info">Track Order</button>
 </form>
 
-@if (Model.Order != null && Model.Order.Id > 0)
+@if (Model.Order.Id > 0)
 {
     <a href="@Url.Action("UpdateStatus", "Order", new { orderId = Model.Order.Id, status = "Shipped" })" class="btn btn-warning">Mark as Shipped</a>
+}*@
+
+
+@section Scripts {
+    <script>
+        function updateTotalPrice() {
+            let total = 0;
+            $('.product-checkbox').each(function (i) {
+                if ($(this).is(':checked')) {
+                    const $input = $(`input[name='ProductQuantities[${i}]']`);
+                    const quantity = parseInt($input.val()) || 0;
+                    const price = parseFloat($input.data('price'));
+                    total += quantity * price;
+                }
+            });
+            $('#totalPrice').text(total.toFixed(2));
+        }
+
+        $(document).on('change', '.product-checkbox, .quantity-input', function () {
+            updateTotalPrice();
+        });
+
+        $(function () {
+            updateTotalPrice();
+        });
+
+        // 🔄 AJAX with loader spinner
+        $(document).ready(function () {
+            $('#orderForm').on('submit', function (e) {
+                e.preventDefault();
+                $('#loader').show(); // Show loader
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        $('#loader').hide(); // Hide loader
+
+                        if (response.success && response.redirectUrl) {
+                            window.location.href = response.redirectUrl;
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        $('#loader').hide(); // Hide loader on error
+                        alert("An error occurred while placing the order.");
+                    }
+                });
+            });
+        });
+    </script>
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

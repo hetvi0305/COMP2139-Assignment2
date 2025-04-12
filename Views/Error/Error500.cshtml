@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Server Error";
+}
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+</head>
+<body>
+<div class="container text-center mt-5">
+    <h1 class="text-danger">500 - Internal Server Error</h1>
+    <p>Oops! Something went wrong on our end.</p>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">Return Home</a>
+</div>
+</body>
+</html>

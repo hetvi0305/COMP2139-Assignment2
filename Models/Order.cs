@@ -1,6 +1,4 @@
-﻿using COMP2139_Assignment1.Controllers;
-
-namespace COMP2139_Assignment1.Models;
+﻿namespace COMP2139_Assignment1.Models;
 
 using System;
 using System.Collections.Generic;
@@ -11,9 +9,11 @@ public class Order
     [Key]
     public int Id { get; set; }
     
-    public string GuestName { get; set; }
+    [StringLength(100)]
+    public string? GuestName { get; set; }
     
-    public string GuestEmail { get; set; }
+    [StringLength(100)]
+    public string? GuestEmail { get; set; }
 
     private DateTime _orderDate;
     public DateTime OrderDate
@@ -25,6 +25,7 @@ public class Order
 
     public decimal TotalPrice { get; set; }
     
+    [StringLength(100)]
     public string OrderStatus { get; set; } = "Pending";
     
     public List<OrderItem> OrderItems { get; set; } = new List<OrderItem>();

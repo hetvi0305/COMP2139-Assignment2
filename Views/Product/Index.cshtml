@@ -1,127 +1,92 @@
-﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
-@model List<Product>
+﻿@model IEnumerable<COMP2139_Assignment1.Models.Product>
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
-    ViewData["Title"] = "Products";
-    /*
-    Layout = "_Layout";
-*/
+    ViewBag.Title = "Product List";
 }
 
 <h2>Products</h2>
-<header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-        <div class="container-fluid">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Product" asp-action="Index">
-                            <i class="fa-brands fa-product-hunt"></i> Product List
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Product" asp-action="Create">
-                            <i class="fa-solid fa-layer-group"></i> Add Product
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-</header>
 
-<!-- Search & Filter Form -->
-<form asp-action="Search" method="get" class="mb-3">
-    <div class="row">
-        <!-- Search by Name -->
-        <div class="col-md-3">
-            <input type="text" name="search" class="form-control" placeholder="Search by name" value="@Context.Request.Query["search"]" />
-        </div>
-
-        <!-- Category Filter -->
-        <div class="col-md-2">
-            <select name="categoryId" class="form-control">
-                <option value="">All Categories</option>
-                @foreach (var category in ViewBag.Categories)
-                {
-                    <option value="@category.Value" selected="@(Context.Request.Query["categoryId"] == category.Value ? "selected" : null)">
-                        @category.Text
-                    </option>
-                }
-            </select>
-        </div>
-
-        <!-- Price Range -->
-        <div class="col-md-2">
-            <input type="number" name="minPrice" class="form-control" placeholder="Min Price" value="@Context.Request.Query["minPrice"]" />
-        </div>
-        <div class="col-md-2">
-            <input type="number" name="maxPrice" class="form-control" placeholder="Max Price" value="@Context.Request.Query["maxPrice"]" />
-        </div>
-
-        <!-- Low Stock Filter -->
-        <div class="col-md-2 form-check">
-            <input type="checkbox" name="lowStock" class="form-check-input" value="true" @(Context.Request.Query["lowStock"] == "true" ? "checked" : "") />
-            <label class="form-check-label">Low Stock</label>
-        </div>
-
-        <!-- Sort Order -->
-        <div class="col-md-2">
-            <select name="sortOrder" class="form-control">
-                <option value="">Sort by</option>
-                <option value="price_asc" selected="@(Context.Request.Query["sortOrder"] == "price_asc")">Price: Low to High</option>
-                <option value="price_desc" selected="@(Context.Request.Query["sortOrder"] == "price_desc")">Price: High to Low</option>
-                <option value="quantity_asc" selected="@(Context.Request.Query["sortOrder"] == "quantity_asc")">Quantity: Low to High</option>
-                <option value="quantity_desc" selected="@(Context.Request.Query["sortOrder"] == "quantity_desc")">Quantity: High to Low</option>
-                @*<option value="quantity" selected="@(Context.Request.Query["sortOrder"] == "quantity")">Quantity</option>*@
-                <option value="name" selected="@(Context.Request.Query["sortOrder"] == "name")">Name</option>
-            </select>
-        </div>
-
-        <!-- Search Button -->
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary">Search</button>
-        </div>
+<div class="filter-section">
+    @*<input type="text" id="searchInput" placeholder="Search by name" />*@
+    <div class="d-flex">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search Products" />
     </div>
-</form>
 
-@if (Model.Any())
-{
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Product ID</th>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>@*<a asp-action="Index" asp-route-sortOrder="@ViewBag.CategorySortParam">
-                    Category <i class="fa-solid fa-sort"></i>
-                </a>*@Category</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var product in Model)
+    <select id="categoryFilter">
+        <option value="">All Categories</option>
+        @foreach (var category in ViewBag.Categories as List<SelectListItem>)
         {
-            <tr>
-                <td>@product.Id</td>
-                <td>@product.Name</td>
-                <td>$@product.Price</td>
-                <td>@product.Quantity</td>
-                <td>@product.Category?.Name</td>
-                <td><a asp-action="Details" asp-route-id="@product.Id" class="btn btn-info">Details</a></td>
-                <td><a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-info">Edit</a></td>
-                <td><a asp-action="Delete" asp-route-id="@product.Id" class="btn btn-danger">Delete</a></td>
-            </tr>
+            <option value="@category.Value">@category.Text</option>
         }
-        </tbody>
-    </table>
-}
-else
-{
-    <p>No products available</p>
+    </select>
+
+    <input type="number" id="minPrice" placeholder="Min Price" />
+    <input type="number" id="maxPrice" placeholder="Max Price" />
+
+    <select id="sortOrder">
+        <option value="">Sort by Category</option>
+        <option value="name">Name (A-Z)</option>
+        <option value="price_asc">Price (Low to High)</option>
+        <option value="price_desc">Price (High to Low)</option>
+        <option value="quantity_asc">Quantity (Low to High)</option>
+        <option value="quantity_desc">Quantity (High to Low)</option>
+        
+    </select>
+  
+
+    <label>
+        <input type="checkbox" id="lowStockCheckbox" /> Low Stock Only
+    </label>
+</div>
+
+<hr/>
+
+
+<div id="productListContainer">
+    @Html.Partial("ProductListPartial", Model)
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            function fetchProducts() {
+                var search = $('#searchInput').val();
+                var categoryId = $('#categoryFilter').val();
+                var minPrice = $('#minPrice').val();
+                var maxPrice = $('#maxPrice').val();
+                var sortOrder = $('#sortOrder').val();
+                var lowStock = $('#lowStockCheckbox').is(':checked');
+
+                $.ajax({
+                    url: '/Product/Search',
+                    data: {
+                        search: search,
+                        categoryId: categoryId,
+                        minPrice: minPrice,
+                        maxPrice: maxPrice,
+                        sortOrder: sortOrder,
+                        lowStock: lowStock
+                    },
+                    success: function (result) {
+                        $('#productListContainer').html(result);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching products:", error);
+                        alert("An error occurred: " + error);
+                    }
+                });
+            }
+
+            // Trigger search on input changes
+            $('#searchInput, #categoryFilter, #minPrice, #maxPrice, #sortOrder, #lowStockCheckbox').on('change keyup', function () {
+                fetchProducts();
+            });
+
+            // Initial load
+            fetchProducts();
+        });
+    </script>
 }

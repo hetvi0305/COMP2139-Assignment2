@@ -1,11 +1,12 @@
-﻿using COMP2139_Assignment1.Controllers;
-
+﻿
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 namespace COMP2139_Assignment1.Data;
-using COMP2139_Assignment1.Models;
+using Models;
 using Microsoft.EntityFrameworkCore;
 
 
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext :  IdentityDbContext<IdentityUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -28,6 +29,8 @@ using Microsoft.EntityFrameworkCore;
         }*/
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.HasDefaultSchema("Identity");
             modelBuilder.Entity<OrderItem>()
                 .HasOne(oi => oi.Order)
                 .WithMany(o => o.OrderItems)

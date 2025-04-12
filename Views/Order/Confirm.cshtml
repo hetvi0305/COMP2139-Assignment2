@@ -21,7 +21,7 @@
     @foreach (var item in Model.OrderItems)
     {
         <tr>
-            <td>@item.Product.Name</td>
+            <td>@item.Product!.Name</td>
             <td>@item.Quantity</td>
             <td>@item.Product.Price.ToString("C")</td>
         </tr>
@@ -29,4 +29,7 @@
     </tbody>
 </table>
 
-<h3>Total Price: @Model.TotalPrice.ToString("C")</h3>
+@{
+    var totalPrice = Model.OrderItems.Sum(item => item.Product.Price * item.Quantity);
+}
+<h3>Total Price: @totalPrice.ToString("C")</h3>

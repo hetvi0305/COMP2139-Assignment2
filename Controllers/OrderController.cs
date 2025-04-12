@@ -1,10 +1,15 @@
-﻿
+﻿using COMP2139_Assignment1.Views.Order;
+
+namespace COMP2139_Assignment1.Controllers;
+using System.Linq;
+using Data;
+using Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using COMP2139_Assignment1.Data;
-using COMP2139_Assignment1.Models;
-using System.Linq;
-using COMP2139_Assignment1.Controllers;
+
+
+[Route("[controller]/[action]")]
 
 public class OrderController : Controller
 {
@@ -14,43 +19,95 @@ public class OrderController : Controller
     {
         _context = context;
     }
-
-    [HttpGet]
+    
+    [HttpGet("")]
+    [Route("Order")]
+    [Authorize(Roles = "Admin")]
     public IActionResult Index()
     {
         var orders = _context.Orders
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
             .ToList();
+
         foreach (var order in orders)
         {
-            order.TotalPrice = order.OrderItems.Sum(oi => oi.Product.Price * oi.Quantity);
+            order.TotalPrice = order.OrderItems.Sum(oi => oi.Product!.Price * oi.Quantity);
         }
 
-        return View(orders);
+        return View(orders.ToList());
     }
-
-    [HttpGet]
+    
+    [HttpGet("Create")]
+    [Authorize(Roles = "Admin,User")]
     public IActionResult Create()
     {
         var viewModel = new OrderCreateViewModel
         {
-            Order = new Order(), // Initialize Order
-            Products = _context.Products.ToList() // Fetch available products
+            Order = new Order(),
+            Products = _context.Products.ToList()
         };
 
         return View(viewModel);
     }
 
-
-    [HttpPost]
+    [HttpPost("Create")]
     [ValidateAntiForgeryToken]
-   
-    public IActionResult Create(OrderCreateViewModel model)
+    [Authorize(Roles = "Admin,User")]
+    public async Task<IActionResult> Create(OrderCreateViewModel model)
     {
+        // Print out what was posted — helps us debug
+        Console.WriteLine("SelectedProducts: " + string.Join(", ", model.SelectedProducts));
+        Console.WriteLine("ProductQuantities: " + string.Join(", ", model.ProductQuantities));
+
+        // Align selected products with their quantities
+        var selectedQuantities = model.SelectedProducts
+            .Select((id, index) => index < model.ProductQuantities.Count ? model.ProductQuantities[index] : 0)
+            .ToList();
+
+        // Validate
+        if (!ModelState.IsValid || !model.SelectedProducts.Any() || selectedQuantities.All(q => q <= 0))
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            Console.WriteLine("Validation errors: " + string.Join("; ", errors));
+            return Json(new { success = false, message = "Invalid form data." });
+        }
+
+        var order = new Order
+        {
+            GuestName = model.GuestName,
+            GuestEmail = model.GuestEmail,
+            OrderDate = DateTime.UtcNow
+        };
+
+        _context.Orders.Add(order);
+        await _context.SaveChangesAsync(); // Save to get Order ID
+
+        for (int i = 0; i < model.SelectedProducts.Count; i++)
+        {
+            int productId = model.SelectedProducts[i];
+            int quantity = selectedQuantities[i];
+
+            if (quantity > 0)
+            {
+                var orderItem = new OrderItem
+                {
+                    OrderId = order.Id,
+                    ProductId = productId,
+                    Quantity = quantity
+                };
+
+                _context.OrderItems.Add(orderItem);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return Json(new { success = true, redirectUrl = Url.Action("Confirm", "Order", new { id = order.Id }) });
+
+    }
+    /*{
         if (ModelState.IsValid)
         {
-            // If validation fails, reload products and return view
             model.Products = _context.Products.ToList();
             return View(model);
         }
@@ -59,15 +116,22 @@ public class OrderController : Controller
         {
             GuestName = model.GuestName,
             GuestEmail = model.GuestEmail,
-            OrderDate = DateTime.UtcNow // Use UTC to avoid PostgreSQL error
+            OrderDate = DateTime.UtcNow
         };
 
         _context.Orders.Add(order);
-        _context.SaveChanges(); // Save first to get OrderId
+        await _context.SaveChangesAsync();
 
-        // Ensure SelectedProducts and ProductQuantities have matching indexes
-        if (model.SelectedProducts != null && model.ProductQuantities != null)
+        if (model.SelectedProducts.Any() && model.ProductQuantities.Any())
         {
+            // block to catch mismatched input
+            if (model.SelectedProducts.Count != model.ProductQuantities.Count)
+            {
+                ModelState.AddModelError("", "Mismatch in products and quantities.");
+                model.Products = _context.Products.ToList();
+                return View(model);
+            }
+            
             for (int i = 0; i < model.SelectedProducts.Count; i++)
             {
                 var productId = model.SelectedProducts[i];
@@ -86,19 +150,102 @@ public class OrderController : Controller
                 }
             }
         }
-        _context.SaveChanges(); // Save order items
 
-        return RedirectToAction("Index"); // Redirect to order list
-    }
+        await _context.SaveChangesAsync();
+        return RedirectToAction("Index");
+    }*/
     
-
-    [HttpGet]
-    public IActionResult Confirm(int id)
+    [HttpGet("Confirm/{id}")]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<IActionResult> Confirm(int id)
     {
-        var order = _context.Orders
+        var order = await _context.Orders
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
-            .FirstOrDefault(o => o.Id == id);
+            .FirstOrDefaultAsync(o => o.Id == id);
+
+        if (order == null)
+            return NotFound();
+
+        return View(order);
+    }
+
+    [HttpGet("UpdateStatus/{orderId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateStatus(int orderId)
+    {
+        var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+        if (order == null)
+        {
+            ModelState.AddModelError(string.Empty, "Order not found.");
+            return RedirectToAction("Index");
+        }
+
+        var viewModel = new OrderCreateViewModel
+        {
+            Id = order.Id,
+            OrderStatus = order.OrderStatus
+        };
+
+        return View(viewModel);
+    }
+
+    [HttpPost("UpdateStatus/{orderId},{orderStatus}")]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateStatus(int orderId, string orderStatus)
+    {
+        var order = await _context.Orders.Include(o => o.OrderItems).FirstOrDefaultAsync(o => o.Id == orderId);
+        if (order != null)
+        {
+            order.OrderStatus = orderStatus;
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index");
+        }
+
+        return NotFound();
+    }
+
+    [HttpGet("Track")]
+    [Authorize(Roles = "Admin,User")]
+    public IActionResult Track()
+    {
+        return View();
+    }
+
+    [HttpPost("Track/{orderId}")]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<IActionResult> Track(string orderId)
+    {
+        if (string.IsNullOrEmpty(orderId))
+        {
+            ViewData["Error"] = "Please enter a valid Order ID.";
+            return View();
+        }
+
+        var order = await _context.Orders
+            .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+            .FirstOrDefaultAsync(o => o.Id.ToString() == orderId);
+
+        if (order == null)
+        {
+            ViewData["Error"] = "Order not found.";
+            return View();
+        }
+
+        order.TotalPrice = order.OrderItems.Sum(oi => oi.Product!.Price * oi.Quantity);
+        return View(order);
+    }
+    [HttpGet]
+    [Route("Order/Delete/{id}")]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var order = await _context.Orders
+            .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+            .FirstOrDefaultAsync(o => o.Id == id);
 
         if (order == null)
         {
@@ -107,84 +254,40 @@ public class OrderController : Controller
 
         return View(order);
     }
-    
-    // This action renders the form for updating the order status.
-    public IActionResult UpdateStatus(int orderId)
+
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var order = _context.Orders.FirstOrDefault(o => o.Id == orderId);
+        var order = await _context.Orders
+            .Include(o => o.OrderItems)
+            .FirstOrDefaultAsync(o => o.Id == id);
 
         if (order == null)
         {
-            ModelState.AddModelError(string.Empty, "Order not found.");
-            return RedirectToAction("Index");
+            return NotFound();
         }
 
-        // Create a ViewModel to pass to the view
-        var viewModel = new OrderCreateViewModel
-        {
-            Id = order.Id,
-            OrderStatus = order.OrderStatus // Make sure the current status is passed
-        };
+        _context.OrderItems.RemoveRange(order.OrderItems); // Remove order items first
+        _context.Orders.Remove(order);                     // Then remove the order itself
+        await _context.SaveChangesAsync();
 
-        return View(viewModel);
+        return RedirectToAction("Index"); // Or return JSON if you're doing AJAX
     }
-
-[HttpPost]
-[ValidateAntiForgeryToken]
-
-public IActionResult UpdateStatus(int orderId, string orderStatus)
-{
-    // Find the order by its ID (you can use your DbContext to fetch it)
-    var order = _context.Orders.Include(o => o.OrderItems).FirstOrDefault(o => o.Id == orderId);
     
-    if (order != null)
-    {
-        // Update the status
-        order.OrderStatus = orderStatus;
-        
-        // Save changes to the database
-        _context.SaveChanges();
-        
-        // Redirect to the order index page after updating
-        return RedirectToAction("Index");
-    }
-
-    // Handle the case where the order is not found (optional)
-    return NotFound();
 }
 
 
-public IActionResult Track()
-{
-    return View();
-}
-
-[HttpPost]
-public IActionResult Track(string orderId)
-{
-    if (string.IsNullOrEmpty(orderId))
-    {
-        ViewData["Error"] = "Please enter a valid Order ID.";
-        return View();
-    }
-
-    var order = _context.Orders
-        .Include(o => o.OrderItems)
-        .ThenInclude(oi => oi.Product)
-        .FirstOrDefault(o => o.Id.ToString() == orderId);
-
-    if (order == null)
-    {
-        ViewData["Error"] = "Order not found.";
-        return View();
-    }
-
-    // Calculate total price (if not already done in the model)
-    order.TotalPrice = order.OrderItems.Sum(oi => oi.Product.Price * oi.Quantity);
-
-    return View(order);  // Returning the order object with total price to Track view
-}
 
 
-}
+
+
+
+
+
+
+
+
+
 

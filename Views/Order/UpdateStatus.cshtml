@@ -1,4 +1,4 @@
-﻿@model OrderCreateViewModel
+﻿@model COMP2139_Assignment1.Views.Order.OrderCreateViewModel
 
 @{
     ViewData["Title"] = "Update Order Status";
@@ -11,7 +11,7 @@
     <input type="hidden" name="orderId" value="@Model.Id" />
 
     <div class="form-group">
-        <label for="status">Order Status</label>
+        <label for="@Model.OrderStatus">Order Status</label>
         @Html.DropDownListFor(
             model => model.OrderStatus,
             new SelectList(new[] { "Pending", "Processing", "Completed", "Cancelled" }, Model.OrderStatus),
