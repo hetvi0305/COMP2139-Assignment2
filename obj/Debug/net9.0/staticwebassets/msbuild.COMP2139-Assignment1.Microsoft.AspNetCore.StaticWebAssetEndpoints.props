@@ -4,13 +4,13 @@
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\COMP2139-Assignment1.65rohsbcf4.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"65rohsbcf4"},{"Name":"integrity","Value":"sha256-lg/hAmkaWiCsN0osOpARIJ0whx\u002Bjwt2RHwbsGVu7Yw8="},{"Name":"label","Value":"_content/COMP2139-Assignment1/COMP2139-Assignment1.bundle.scp.css"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"1138"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022lg/hAmkaWiCsN0osOpARIJ0whx\u002Bjwt2RHwbsGVu7Yw8=\u0022"},{"Name":"Last-Modified","Value":"Sat, 12 Apr 2025 18:02:28 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"1138"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022lg/hAmkaWiCsN0osOpARIJ0whx\u002Bjwt2RHwbsGVu7Yw8=\u0022"},{"Name":"Last-Modified","Value":"Sat, 12 Apr 2025 20:31:14 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/COMP2139-Assignment1/COMP2139-Assignment1.bundle.scp.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\COMP2139-Assignment1.65rohsbcf4.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-lg/hAmkaWiCsN0osOpARIJ0whx\u002Bjwt2RHwbsGVu7Yw8="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"1138"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022lg/hAmkaWiCsN0osOpARIJ0whx\u002Bjwt2RHwbsGVu7Yw8=\u0022"},{"Name":"Last-Modified","Value":"Sat, 12 Apr 2025 18:02:28 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"1138"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022lg/hAmkaWiCsN0osOpARIJ0whx\u002Bjwt2RHwbsGVu7Yw8=\u0022"},{"Name":"Last-Modified","Value":"Sat, 12 Apr 2025 20:31:14 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/COMP2139-Assignment1/css/COMP2139_Assignment1.styles.5ipweew5fc.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\COMP2139_Assignment1.styles.css'))</AssetFile>
