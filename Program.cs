@@ -4,6 +4,7 @@ using COMP2139_Assignment1.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 
 namespace COMP2139_Assignment1;
 
@@ -15,6 +16,8 @@ public class Program
 
         builder.Services.AddControllersWithViews();
         builder.Services.AddRazorPages();
+        builder.Services.AddApplicationInsightsTelemetry();
+
         
         builder.Services.AddTransient<IEmailSender, EmailSender>();
         
